@@ -1,0 +1,42 @@
+// connect and login to FTP server
+$FTP_SERVER     = "YOUR_IP_FTP";
+$USER_FTP       = "YOUR_USER_FTP";
+$PASS_FTP       = "YOUR_PASS_FTP";
+//IF USING PORT 21
+$FTP_CONN       = ftp_connect($FTP_SERVER, 21) or die("Could not connect to $FTP_SERVER");
+$FTP_LOGIN      = ftp_login($FTP_CONN, $USER_FTP, $PASS_FTP);
+
+if ((!$FTP_CONN) || (!$FTP_LOGIN)) {
+ 	echo 'FTP connection has failed! Attempted to connect to '. $FTP_SERVER. ' for user '.$USER_FTP.'.\n';
+}else{
+ 	echo 'FTP connection was a success.\n';
+
+	try {
+ 		$fileRemote 	= "YOUR_PATH_FOLDER";
+		$fileName 	  = "YOUR_FILE_NAME.txt";
+    $fileContent  = "YOUR CONTENT FILE";
+
+		$fileHandle = fopen('php://temp', 'r+');
+		fwrite($fileHandle, $fileContent);
+		rewind($fileHandle);
+
+		ftp_pasv($FTP_CONN, true);
+
+		$UPLOAD_RESULT = ftp_fput($FTP_CONN, $fileRemote.'/'.$fileName, $fileHandle, FTP_ASCII);
+
+		if(!$UPLOAD_RESULT){
+		    echo('<p>FTP error: The file could not be written to the FTP server.</p>\n');
+		} else {
+			echo('<p>Success uploaded  File!.</p>\n');
+		}
+	} catch (Exception $e) {
+	    echo 'Caught exception: ',  $e->getMessage(), "\n";
+	}
+}
+
+// Close FTP connection
+ftp_close($FTP_CONN);
+
+// Close file handle
+fclose($fileHandle); 
+exit;
